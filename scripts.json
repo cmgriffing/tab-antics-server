@@ -1,0 +1,16 @@
+{
+  "$schema": "https://deno.land/x/denon@2.4.7/schema.json",
+  "scripts": {
+    "start": {
+      "cmd": "deno run index.ts",
+      "desc": "run my index.ts file",
+      "allow": ["net", "read", "write"],
+      "unstable": true
+    },
+    "client": {
+      "cmd": "deno run test-client.ts",
+      "desc": "run my test-client.ts file",
+      "allow": ["net"]
+    }
+  }
+}
