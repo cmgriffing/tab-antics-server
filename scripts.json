@@ -4,7 +4,7 @@
     "start": {
       "cmd": "deno run index.ts",
       "desc": "run my index.ts file",
-      "allow": ["net", "read", "write"],
+      "allow": ["net", "read", "write", "env"],
       "unstable": true
     },
     "client": {
