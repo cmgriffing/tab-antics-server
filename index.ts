@@ -94,5 +94,5 @@ app.use(oakCors());
 app.use(router.routes());
 app.use(router.allowedMethods());
 
-const port = Deno.env.get("PORT") ?? 80;
+const port = Deno.env.get("PORT") ?? 8080;
 await app.listen(`127.0.0.1:${port}`);
