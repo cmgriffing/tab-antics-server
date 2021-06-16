@@ -23,9 +23,9 @@ const socketServer = createSocketServer(db);
 
 const router = new Router();
 router
-  .get("/hello", (context: Context) => {
-    context.response.body = "Hello world!";
-  })
+  // .get("/hello", (context: Context) => {
+  //   context.response.body = "Hello world!";
+  // })
   .post("/redemption/:channelId", async (context) => {
     const body = await context.request.body();
 
