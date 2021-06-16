@@ -22,74 +22,70 @@ const db = new Datastore({
 const socketServer = createSocketServer(db);
 
 const router = new Router();
-router
-  // .get("/hello", (context: Context) => {
-  //   context.response.body = "Hello world!";
-  // })
-  .post("/redemption/:channelId", async (context) => {
-    const body = await context.request.body();
+router.post("/redemption/:channelId", async (context) => {
+  const body = await context.request.body();
 
-    if (!body) {
-      console.log("Body not defined");
-      return context.throw(400);
+  if (!body) {
+    console.log("Body not defined");
+    return context.throw(400);
+  }
+
+  // TODO Pull out token to middleware when a new auth endpoint is made
+
+  const token =
+    context.request.headers.get("Authorization")?.substr("Bearer ".length) ??
+    "";
+
+  let tokenChannelId = "";
+
+  try {
+    const [_header, payload, _signature] = decodeToken(token);
+    console.log({ payload });
+    tokenChannelId = (payload as any).channel_id;
+  } catch (e: unknown) {
+    context.throw(401);
+  }
+
+  // END Token shenanigans
+
+  console.log("inside redemption");
+  console.log("params", context.params);
+
+  const { channelId } = context.params;
+
+  if (channelId !== tokenChannelId) {
+    context.throw(403);
+  }
+
+  if (channelId) {
+    const socketClientEntries = await db.findOne({ channelId: channelId });
+
+    console.log({ socketClientEntries });
+
+    if (!socketClientEntries) {
+      context.throw(404);
     }
 
-    // TODO Pull out token to middleware when a new auth endpoint is made
+    const socketClientEntry = socketClientEntries as unknown as DatabaseEntry;
 
-    const token =
-      context.request.headers.get("Authorization")?.substr("Bearer ".length) ??
-      "";
-
-    let tokenChannelId = "";
-
-    try {
-      const [_header, payload, _signature] = decodeToken(token);
-      console.log({ payload });
-      tokenChannelId = (payload as any).channel_id;
-    } catch (e: unknown) {
-      context.throw(401);
-    }
-
-    // END Token shenanigans
-
-    console.log("inside redemption");
-    console.log("params", context.params);
-
-    const { channelId } = context.params;
-
-    if (channelId !== tokenChannelId) {
-      context.throw(403);
-    }
-
-    if (channelId) {
-      const socketClientEntries = await db.findOne({ channelId: channelId });
-
-      console.log({ socketClientEntries });
-
-      if (!socketClientEntries) {
-        context.throw(404);
-      }
-
-      const socketClientEntry = socketClientEntries as unknown as DatabaseEntry;
-
-      socketServer.to(
-        "redemption",
-        {
-          data: {
-            type: "redemption",
-            action: (await body?.value)?.action ?? "",
-          },
+    socketServer.to(
+      "redemption",
+      {
+        data: {
+          type: "redemption",
+          action: (await body?.value)?.action ?? "",
         },
-        socketClientEntry?.socketId
-      );
+      },
+      socketClientEntry?.socketId
+    );
 
-      context.response.body = {
-        success: true,
-      };
-    } else {
-      context.throw(400);
-    }
-  });
+    context.response.body = {
+      success: true,
+    };
+  } else {
+    context.throw(400);
+  }
+});
 
 const app = new Application();
 app.use(oakCors());
