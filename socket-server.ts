@@ -18,16 +18,6 @@ export function createSocketServer(db: Datastore) {
   // Create the server
   const socketServer = new Server();
 
-  // Run the server
-  socketServer.run({
-    hostname: "0.0.0.0",
-    port: 8080,
-  });
-
-  console.log(
-    `Server started on ws://${socketServer.hostname}:${socketServer.port}`
-  );
-
   socketServer.on("initiate", async (packet: Packet) => {
     console.log("initiate fired");
 

@@ -29,6 +29,7 @@ router
     const body = await context.request.body();
 
     if (!body) {
+      console.log("Body not defined");
       return context.throw(400);
     }
 
@@ -94,5 +95,18 @@ app.use(oakCors());
 app.use(router.routes());
 app.use(router.allowedMethods());
 
-const port = Deno.env.get("PORT") ?? 8080;
-await app.listen(`0.0.0.0:${port}`);
+const ip = "0.0.0.0";
+// const ip = "127.0.0.1";
+const port = Deno.env.get("PORT") ?? 8088;
+await app.listen(`${ip}:${port}`);
+
+// Run the server
+socketServer.run({
+  hostname: "0.0.0.0",
+  // hostname: "127.0.0.1",
+  port: 8088,
+});
+
+console.log(
+  `Server started on ws://${socketServer.hostname}:${socketServer.port}`
+);
