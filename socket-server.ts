@@ -1,6 +1,5 @@
 import Datastore from "https://deno.land/x/dndb@0.3.3/mod.ts";
 import { Server, Packet } from "https://deno.land/x/wocket@v0.6.3/mod.ts";
-import { decode as decodeToken } from "https://deno.land/x/djwt@v2.2/mod.ts";
 
 import { TWITCH_CLIENT_ID } from "./vars.ts";
 
@@ -47,10 +46,6 @@ export function createSocketServer(db: Datastore) {
         socketId: packet.from.id,
       });
     }
-  });
-
-  socketServer.on("redemption", (packet: Packet) => {
-    console.log("redemption fired");
   });
 
   socketServer.on("disconnect", (packet: Packet) => {

@@ -7,6 +7,7 @@ import { oakCors } from "https://deno.land/x/cors@v1.2.2/mod.ts";
 import Datastore from "https://deno.land/x/dndb@0.3.3/mod.ts";
 import { createSocketServer } from "./socket-server.ts";
 import { decode as decodeToken } from "https://deno.land/x/djwt@v2.2/mod.ts";
+import { HOSTNAME, PORT } from "./vars.ts";
 
 interface DatabaseEntry {
   socketId: number;
@@ -22,7 +23,7 @@ const socketServer = createSocketServer(db);
 
 const router = new Router();
 router
-  .get("/", (context: Context) => {
+  .get("/hello", (context: Context) => {
     context.response.body = "Hello world!";
   })
   .post("/redemption/:channelId", async (context) => {
@@ -95,18 +96,18 @@ app.use(oakCors());
 app.use(router.routes());
 app.use(router.allowedMethods());
 
-const ip = "0.0.0.0";
-// const ip = "127.0.0.1";
-const port = Deno.env.get("PORT") ?? 8088;
+const ip = HOSTNAME;
+const port = PORT;
 await app.listen(`${ip}:${port}`);
+
+console.log(`Web Server started on http://${ip}:${port}`);
 
 // Run the server
 socketServer.run({
-  hostname: "0.0.0.0",
-  // hostname: "127.0.0.1",
-  port: 8088,
+  hostname: HOSTNAME,
+  port: +PORT,
 });
 
 console.log(
-  `Server started on ws://${socketServer.hostname}:${socketServer.port}`
+  `Socket Server started on ws://${socketServer.hostname}:${socketServer.port}`
 );
