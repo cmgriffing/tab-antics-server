@@ -95,4 +95,4 @@ app.use(router.routes());
 app.use(router.allowedMethods());
 
 const port = Deno.env.get("PORT") ?? 8080;
-await app.listen(`127.0.0.1:${port}`);
+await app.listen(`0.0.0.0:${port}`);

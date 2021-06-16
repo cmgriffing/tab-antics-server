@@ -20,7 +20,7 @@ export function createSocketServer(db: Datastore) {
 
   // Run the server
   socketServer.run({
-    hostname: "127.0.0.1",
+    hostname: "0.0.0.0",
     port: 1777,
   });
 
