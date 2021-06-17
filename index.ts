@@ -7,7 +7,7 @@ import { oakCors } from "https://deno.land/x/cors@v1.2.2/mod.ts";
 import Datastore from "https://deno.land/x/dndb@0.3.3/mod.ts";
 import { createSocketServer } from "./socket-server.ts";
 import { decode as decodeToken } from "https://deno.land/x/djwt@v2.2/mod.ts";
-import { HOSTNAME, PORT } from "./vars.ts";
+import { HOSTNAME, HTTP_PORT, WS_PORT } from "./vars.ts";
 
 interface DatabaseEntry {
   socketId: number;
@@ -22,70 +22,74 @@ const db = new Datastore({
 const socketServer = createSocketServer(db);
 
 const router = new Router();
-router.post("/redemption/:channelId", async (context) => {
-  const body = await context.request.body();
+router
+  .get("/hello", (context: Context) => {
+    context.response.body = "Hello world!";
+  })
+  .post("/redemption/:channelId", async (context) => {
+    const body = await context.request.body();
 
-  if (!body) {
-    console.log("Body not defined");
-    return context.throw(400);
-  }
-
-  // TODO Pull out token to middleware when a new auth endpoint is made
-
-  const token =
-    context.request.headers.get("Authorization")?.substr("Bearer ".length) ??
-    "";
-
-  let tokenChannelId = "";
-
-  try {
-    const [_header, payload, _signature] = decodeToken(token);
-    console.log({ payload });
-    tokenChannelId = (payload as any).channel_id;
-  } catch (e: unknown) {
-    context.throw(401);
-  }
-
-  // END Token shenanigans
-
-  console.log("inside redemption");
-  console.log("params", context.params);
-
-  const { channelId } = context.params;
-
-  if (channelId !== tokenChannelId) {
-    context.throw(403);
-  }
-
-  if (channelId) {
-    const socketClientEntries = await db.findOne({ channelId: channelId });
-
-    console.log({ socketClientEntries });
-
-    if (!socketClientEntries) {
-      context.throw(404);
+    if (!body) {
+      console.log("Body not defined");
+      return context.throw(400);
     }
 
-    const socketClientEntry = socketClientEntries as unknown as DatabaseEntry;
+    // TODO Pull out token to middleware when a new auth endpoint is made
 
-    socketServer.to(
-      "redemption",
-      {
-        data: {
-          type: "redemption",
-          action: (await body?.value)?.action ?? "",
+    const token =
+      context.request.headers.get("Authorization")?.substr("Bearer ".length) ??
+      "";
+
+    let tokenChannelId = "";
+
+    try {
+      const [_header, payload, _signature] = decodeToken(token);
+      console.log({ payload });
+      tokenChannelId = (payload as any).channel_id;
+    } catch (e: unknown) {
+      context.throw(401);
+    }
+
+    // END Token shenanigans
+
+    console.log("inside redemption");
+    console.log("params", context.params);
+
+    const { channelId } = context.params;
+
+    if (channelId !== tokenChannelId) {
+      context.throw(403);
+    }
+
+    if (channelId) {
+      const socketClientEntries = await db.findOne({ channelId: channelId });
+
+      console.log({ socketClientEntries });
+
+      if (!socketClientEntries) {
+        context.throw(404);
+      }
+
+      const socketClientEntry = socketClientEntries as unknown as DatabaseEntry;
+
+      socketServer.to(
+        "redemption",
+        {
+          data: {
+            type: "redemption",
+            action: (await body?.value)?.action ?? "",
+          },
         },
-      },
-      socketClientEntry?.socketId
-    );
+        socketClientEntry?.socketId
+      );
 
-    context.response.body = {
-      success: true,
-    };
-  } else {
-    context.throw(400);
-  }
-});
+      context.response.body = {
+        success: true,
+      };
+    } else {
+      context.throw(400);
+    }
+  });
 
 const app = new Application();
 app.use(oakCors());
@@ -93,7 +97,7 @@ app.use(router.routes());
 app.use(router.allowedMethods());
 
 const ip = HOSTNAME;
-const port = PORT;
+const port = HTTP_PORT;
 await app.listen(`${ip}:${port}`);
 
 console.log(`Web Server started on http://${ip}:${port}`);
@@ -101,7 +105,7 @@ console.log(`Web Server started on http://${ip}:${port}`);
 // Run the server
 socketServer.run({
   hostname: HOSTNAME,
-  port: +PORT,
+  port: +WS_PORT,
 });
 
 console.log(
