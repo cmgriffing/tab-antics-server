@@ -105,7 +105,6 @@ const app = new Application();
 app.use(oakCors());
 app.use(router.routes());
 app.use(router.allowedMethods());
+console.log(`Web Server starting on http://${HOSTNAME}:${HTTP_PORT}`);
 
-await app.listen(`${HOSTNAME}:${HTTP_PORT}`);
-
-console.log(`Web Server started on http://${HOSTNAME}:${HTTP_PORT}`);
+app.listen(`${HOSTNAME}:${HTTP_PORT}`);
