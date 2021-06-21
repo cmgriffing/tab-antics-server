@@ -91,17 +91,6 @@ router
     }
   });
 
-const app = new Application();
-app.use(oakCors());
-app.use(router.routes());
-app.use(router.allowedMethods());
-
-const ip = HOSTNAME;
-const port = HTTP_PORT;
-await app.listen(`${ip}:${port}`);
-
-console.log(`Web Server started on http://${ip}:${port}`);
-
 // Run the server
 socketServer.run({
   hostname: HOSTNAME,
@@ -111,3 +100,12 @@ socketServer.run({
 console.log(
   `Socket Server started on ws://${socketServer.hostname}:${socketServer.port}`
 );
+
+const app = new Application();
+app.use(oakCors());
+app.use(router.routes());
+app.use(router.allowedMethods());
+
+await app.listen(`${HOSTNAME}:${HTTP_PORT}`);
+
+console.log(`Web Server started on http://${HOSTNAME}:${HTTP_PORT}`);

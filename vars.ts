@@ -8,4 +8,6 @@ const HTTP_PORT = envConfig["HTTP_PORT"] || Deno.env.get("HTTP_PORT");
 const WS_PORT = envConfig["WS_PORT"] || Deno.env.get("WS_PORT");
 const HOSTNAME = envConfig["HOSTNAME"] || Deno.env.get("HOSTNAME");
 
+console.log({ TWITCH_CLIENT_ID, HTTP_PORT, WS_PORT, HOSTNAME });
+
 export { TWITCH_CLIENT_ID, HTTP_PORT, WS_PORT, HOSTNAME };
