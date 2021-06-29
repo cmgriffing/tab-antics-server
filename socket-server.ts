@@ -36,7 +36,7 @@ export function createSocketServer(db: Datastore) {
 
       console.log({ userDetails });
 
-      const tokenChannelId = (userDetails as any)?.data[0]?.id ?? "";
+      const tokenChannelId = (userDetails as any)?.data?.[0]?.id ?? "";
 
       // verify token and get channelId
       const channelId = tokenChannelId;
@@ -46,6 +46,10 @@ export function createSocketServer(db: Datastore) {
         socketId: packet.from.id,
       });
     }
+  });
+
+  socketServer.on("redemption", (packet: Packet) => {
+    console.log("Server side redemption subscription: ", packet);
   });
 
   socketServer.on("disconnect", (packet: Packet) => {

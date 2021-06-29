@@ -70,22 +70,34 @@ router
         context.throw(404);
       }
 
-      const socketClientEntry = socketClientEntries as unknown as DatabaseEntry;
+      try {
+        const regex = new RegExp("[\\D]+");
+        const action = ((await body?.value)?.action ?? "")
+          .substr(2)
+          .match(regex)[0];
 
-      socketServer.to(
-        "redemption",
-        {
-          data: {
-            type: "redemption",
-            action: (await body?.value)?.action ?? "",
+        console.log("Action being performed: ", action);
+
+        const socketClientEntry =
+          socketClientEntries as unknown as DatabaseEntry;
+
+        socketServer.to(
+          "redemption",
+          {
+            data: {
+              type: "redemption",
+              action,
+            },
           },
-        },
-        socketClientEntry?.socketId
-      );
+          socketClientEntry?.socketId
+        );
 
-      context.response.body = {
-        success: true,
-      };
+        context.response.body = {
+          success: true,
+        };
+      } catch (e) {
+        console.log("Error sending request to extension: ", e);
+      }
     } else {
       context.throw(400);
     }
